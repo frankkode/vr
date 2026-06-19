@@ -1,0 +1,27 @@
+ATTRIBUTION — models/heart.glb
+================================
+
+Current model (heart.glb):
+  Name       : 3D Animated Realistic Human Heart - V2.0 / "Human Heart Beating - Annotations"
+  Author     : dcpisith
+  Source     : https://sketchfab.com/3d-models/human-heart-beating-annotations-10e9a26f7e004a09bb357d30e4e35f29
+  Licence    : CC Attribution (CC BY 4.0)
+  Licence URL: https://creativecommons.org/licenses/by/4.0/
+
+Required attribution:
+  "Human Heart Beating - Annotations" by dcpisith, licensed under CC Attribution.
+  https://sketchfab.com/3d-models/human-heart-beating-annotations-10e9a26f7e004a09bb357d30e4e35f29
+
+Derivation note:
+  Downloaded as GLB (2K texture variant, ~11 MB) from Sketchfab.
+  34,401 triangles, rigged with one skeletal animation ("test", 1s loop).
+  No geometry or texture modifications were made.
+
+For Appendix D, record:
+| Field              | Value                                                                                       |
+|--------------------|---------------------------------------------------------------------------------------------|
+| Model name         | Human Heart Beating - Annotations                                                            |
+| Author             | dcpisith                                                                                    |
+| Source URL         | https://sketchfab.com/3d-models/human-heart-beating-annotations-10e9a26f7e004a09bb357d30e4e35f29 |
+| Licence            | CC BY 4.0                                                                                   |
+| Attribution shown  | yes, this file and index.html asset comment                                                  |
