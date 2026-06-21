@@ -5,23 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>Living Print — Inside the Heart (VR)</title>
 
-<!-- Error reporter: surface real errors instead of masked "Script error." -->
+<!-- Error reporter + WebGL check + CDN load detection -->
 <script>
-window.addEventListener('error', function (e) {
+var _errs = [];
+function showError(msg) {
+  _errs.push(msg);
   var box = document.getElementById('errbox') || (function () {
     var d = document.createElement('div'); d.id = 'errbox';
-    d.style.cssText = 'position:fixed;z-index:99999;left:8px;right:8px;bottom:8px;background:#1a0a0f;color:#ffb8c6;padding:10px 12px;border:1px solid #c0395c;border-radius:12px;font:12px/1.4 monospace;white-space:pre-wrap';
+    d.style.cssText = 'position:fixed;z-index:99999;left:8px;right:8px;bottom:8px;background:#1a0a0f;color:#ffb8c6;padding:10px 12px;border:1px solid #c0395c;border-radius:12px;font:11px/1.4 monospace;white-space:pre-wrap;max-height:50vh;overflow-y:auto;pointer-events:none';
     document.body && document.body.appendChild(d); return d;
   })();
-  if (box) box.textContent = 'Error: ' + (e.message || 'unknown') +
-    (e.filename ? ('\n' + e.filename + ':' + e.lineno) : '');
+  if (box) box.textContent = _errs.join('\n');
+}
+window.addEventListener('error', function (e) {
+  var msg = e.message || 'unknown';
+  if (e.filename) msg += '\n  at ' + (e.filename + '').replace(/^https?:\/\/[^/]+/, '') + ':' + e.lineno + ':' + e.colno;
+  showError(msg);
 });
+window.addEventListener('unhandledrejection', function (e) {
+  showError('Promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason || '')));
+});
+// WebGL check — gracefully degrade if unavailable
+var _testCanvas = document.createElement('canvas');
+var gl = _testCanvas.getContext('webgl2') || _testCanvas.getContext('webgl');
+if (!gl) showError('WebGL not available — 3D scene cannot render. Try a different browser or device.');
 </script>
 
 <!-- A-Frame WebXR -->
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js" crossorigin="anonymous"></script>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js" crossorigin="anonymous" onerror="showError('Failed to load A-Frame from CDN — check your internet connection.')"></script>
 <!-- aframe-extras for animation-mixer (plays built-in skeletal animation on GLB) -->
-<script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js" crossorigin="anonymous" onerror="showError('Failed to load aframe-extras from CDN.')"></script>
 
 <style>
 /* ============================================================
@@ -678,6 +691,11 @@ a-scene { position:fixed;left:350px;top:0;right:0;bottom:0; }
      TOUR SCRIPT
      ============================================================ -->
 <script>
+// Bail early if A-Frame didn't load (e.g., network error on mobile)
+if (typeof AFRAME === 'undefined') {
+  showError('A-Frame failed to load. Check your internet connection and try refreshing.');
+  throw new Error('AFRAME not loaded');
+}
 // ============================================================
 // UTILITY: Catmull-Rom spline interpolation
 // ============================================================
@@ -833,20 +851,21 @@ AFRAME.registerComponent('tour', {
     // warm up speech voices (they load asynchronously in most browsers)
     if (window.speechSynthesis) { try { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = function () {}; } catch (e) {} }
 
-    this.buildAmbientParticles();
-    this.buildStreams();
-    this.buildFlowArrows();
-    this.buildMarkers();
+    try { this.buildAmbientParticles(); } catch (e) { console.warn('buildAmbientParticles:', e); }
+    try { this.buildStreams(); } catch (e) { console.warn('buildStreams:', e); }
+    try { this.buildFlowArrows(); } catch (e) { console.warn('buildFlowArrows:', e); }
+    try { this.buildMarkers(); } catch (e) { console.warn('buildMarkers:', e); }
     try { this.orientArrows(); } catch (e) { console.warn('orientArrows:', e); }
 
-    document.querySelector('#nextBtn').addEventListener('click', function () { self.go(self.index + 1); });
-    document.querySelector('#prevBtn').addEventListener('click', function () { self.go(self.index - 1); });
-    document.querySelector('#vrNext').addEventListener('click', function () { self.go(self.index + 1); });
-    document.querySelector('#slowBtn').addEventListener('click', function (e) { self.toggleSlow(e.target); });
-    document.querySelector('#muteBtn').addEventListener('click', function (e) { self.toggleMute(e.target); });
-    document.querySelector('#xrayBtn').addEventListener('click', function (e) { self.toggleXray(e.target); });
-    document.querySelector('#pauseBtn').addEventListener('click', function (e) { self.togglePause(e.target); });
-    document.querySelector('#quizBtn').addEventListener('click', function () { self.startQuiz(); });
+    function safeOn(el, ev, fn) { if (el) el.addEventListener(ev, fn); }
+    safeOn(document.querySelector('#nextBtn'), 'click', function () { self.go(self.index + 1); });
+    safeOn(document.querySelector('#prevBtn'), 'click', function () { self.go(self.index - 1); });
+    safeOn(document.querySelector('#vrNext'), 'click', function () { self.go(self.index + 1); });
+    safeOn(document.querySelector('#slowBtn'), 'click', function (e) { self.toggleSlow(e.target); });
+    safeOn(document.querySelector('#muteBtn'), 'click', function (e) { self.toggleMute(e.target); });
+    safeOn(document.querySelector('#xrayBtn'), 'click', function (e) { self.toggleXray(e.target); });
+    safeOn(document.querySelector('#pauseBtn'), 'click', function (e) { self.togglePause(e.target); });
+    safeOn(document.querySelector('#quizBtn'), 'click', function () { self.startQuiz(); });
 
     // Clickable anatomy hotspots: point at an arrow to reveal + hear the structure
     var arrows = document.querySelectorAll('.anatomy-arrow');
@@ -1205,14 +1224,16 @@ AFRAME.registerComponent('tour', {
 
   // ---- CLICKABLE HOTSPOT: reveal + speak a structure ----
   revealChamber: function (el) {
-    var ch = el.getAttribute('data-chamber');
-    var name = this.chamberNames[ch] || ch;
-    var p = new THREE.Vector3(); el.object3D.getWorldPosition(p);
-    var lbl = document.querySelector('#hotLabel');
-    lbl.object3D.position.set(p.x, p.y + 0.25, p.z + 0.05);
-    document.querySelector('#hotText').setAttribute('value', name);
-    lbl.setAttribute('visible', 'true');
-    this.speak(name);
+    try {
+      var ch = el.getAttribute('data-chamber');
+      var name = this.chamberNames[ch] || ch;
+      var p = new THREE.Vector3(); el.object3D.getWorldPosition(p);
+      var lbl = document.querySelector('#hotLabel');
+      lbl.object3D.position.set(p.x, p.y + 0.25, p.z + 0.05);
+      document.querySelector('#hotText').setAttribute('value', name);
+      lbl.setAttribute('visible', 'true');
+      this.speak(name);
+    } catch (e) { console.warn('revealChamber:', e); }
   },
 
   // ---- END-OF-SCENE QUIZ ----
@@ -1529,10 +1550,14 @@ AFRAME.registerComponent('valve', {
 
   if (heartAsset) {
     heartAsset.addEventListener('loaded', reveal);
+    heartAsset.addEventListener('error', function () {
+      showError('Failed to load 3D heart model (models/heart.glb — 11 MB). Check your connection and try refreshing.');
+      reveal();
+    });
   }
   setTimeout(function () {
     if (!loaded) { timedOut = true; reveal(); }
-  }, 5000);
+  }, 15000); // generous timeout for slow mobile connections
 })();
 
 // ============================================================

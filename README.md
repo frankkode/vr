@@ -51,3 +51,5 @@ Then open `http://localhost:3000` in your browser.
 ## License
 
 Code is unlicensed. The 3D heart model (`models/heart.glb`) is [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) by dcpisith — see [models/ATTRIBUTION.txt](models/ATTRIBUTION.txt) for details.
+
+## By:Developed by Frank Masabo
