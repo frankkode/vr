@@ -302,7 +302,7 @@ a-scene { position:fixed;left:350px;top:0;right:0;bottom:0; }
 #circmap{position:fixed;right:14px;bottom:14px;z-index:11;width:236px;
   background:rgba(8,12,24,.84);border:1px solid rgba(120,150,210,.25);border-radius:12px;
   padding:8px 10px 6px;backdrop-filter:blur(4px)}
-#circmap h4{margin:0 0 2px;font-size:11px;font-weight:700;color:#cdd8f0;letter-spacing:.4px}
+#circmap h4{margin:0 0 2px;font-size:11px;font-weight:700;color:#cdd8f0;letter-spacing:.4px;cursor:grab;user-select:none}
 #circmap svg{width:100%;height:auto;display:block}
 #circmap .legend{display:flex;gap:12px;margin-top:2px;font-size:9.5px;color:#9fb0d6}
 #circmap .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
@@ -1533,6 +1533,64 @@ AFRAME.registerComponent('valve', {
   setTimeout(function () {
     if (!loaded) { timedOut = true; reveal(); }
   }, 5000);
+})();
+
+// ============================================================
+// DRAGGABLE CIRCULATION MAP
+// ============================================================
+(function () {
+  var map = document.getElementById('circmap');
+  var handle = map && map.querySelector('h4');
+  if (!map || !handle) return;
+
+  var dragging, startX, startY, origLeft, origTop, left, top;
+
+  function snap() {
+    var r = map.getBoundingClientRect();
+    left = r.left;
+    top = r.top;
+    map.style.left = left + 'px';
+    map.style.top = top + 'px';
+    map.style.right = 'auto';
+    map.style.bottom = 'auto';
+  }
+
+  function onStart(e) {
+    if (e.target !== handle && !handle.contains(e.target)) return;
+    dragging = true;
+    handle.style.cursor = 'grabbing';
+    map.style.transition = 'none';
+    if (map.style.right !== 'auto') snap();
+    var pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX;
+    startY = pt.clientY;
+    origLeft = left;
+    origTop = top;
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    var pt = e.touches ? e.touches[0] : e;
+    left = Math.max(0, Math.min(window.innerWidth - map.offsetWidth, origLeft + pt.clientX - startX));
+    top = Math.max(0, Math.min(window.innerHeight - map.offsetHeight, origTop + pt.clientY - startY));
+    map.style.left = left + 'px';
+    map.style.top = top + 'px';
+  }
+
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    handle.style.cursor = 'grab';
+    map.style.transition = '';
+  }
+
+  handle.addEventListener('mousedown', onStart);
+  handle.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onEnd);
+  window.addEventListener('touchend', onEnd);
 })();
 </script>
 </body>
