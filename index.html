@@ -683,16 +683,16 @@ a-scene { position:fixed;left:350px;top:0;right:0;bottom:0; }
   </a-entity>
 
   <!-- ===================== IN-SCENE QUIZ ===================== -->
-  <a-entity id="quiz" visible="false" position="0 1.6 -0.5">
-    <a-plane width="2.6" height="1.8" color="#0b1124" opacity="0.97" material="side: double; transparent: true; depthTest: false; shader: flat"></a-plane>
-    <a-text id="quizQ" value="" align="center" width="2.4" wrap-count="38" color="#ffffff" position="0 0.6 0.02"></a-text>
-    <a-plane class="clickable quizAns" id="qa0" width="2.3" height="0.34" color="#15203c" position="0 0.12 0.02">
-      <a-text id="qa0t" value="" align="center" width="2.2" color="#dde6fb" position="0 0 0.01"></a-text></a-plane>
-    <a-plane class="clickable quizAns" id="qa1" width="2.3" height="0.34" color="#15203c" position="0 -0.28 0.02">
-      <a-text id="qa1t" value="" align="center" width="2.2" color="#dde6fb" position="0 0 0.01"></a-text></a-plane>
-    <a-plane class="clickable quizAns" id="qa2" width="2.3" height="0.34" color="#15203c" position="0 -0.68 0.02">
-      <a-text id="qa2t" value="" align="center" width="2.2" color="#dde6fb" position="0 0 0.01"></a-text></a-plane>
-    <a-text id="quizFb" value="" align="center" width="2.4" color="#9fe8b0" position="0 -1.08 0.02"></a-text>
+  <a-entity id="quiz" visible="false" position="0 1.7 1.4" look-at="[camera]">
+    <a-plane width="3.0" height="2.2" color="#0d1428" opacity="0.92" material="side: double; transparent: true; depthTest: false; shader: flat"></a-plane>
+    <a-text id="quizQ" value="" align="center" width="2.8" wrap-count="38" color="#fff" position="0 0.7 0.02"></a-text>
+    <a-plane class="clickable quizAns" id="qa0" width="2.7" height="0.40" color="#1f3460" position="0 0.18 0.02" material="side: double; transparent: false">
+      <a-text id="qa0t" value="" align="center" width="2.5" color="#fff" position="0 0 0.01"></a-text></a-plane>
+    <a-plane class="clickable quizAns" id="qa1" width="2.7" height="0.40" color="#1f3460" position="0 -0.32 0.02" material="side: double; transparent: false">
+      <a-text id="qa1t" value="" align="center" width="2.5" color="#fff" position="0 0 0.01"></a-text></a-plane>
+    <a-plane class="clickable quizAns" id="qa2" width="2.7" height="0.40" color="#1f3460" position="0 -0.82 0.02" material="side: double; transparent: false">
+      <a-text id="qa2t" value="" align="center" width="2.5" color="#fff" position="0 0 0.01"></a-text></a-plane>
+    <a-text id="quizFb" value="" align="center" width="2.6" color="#7fffa0" position="0 -1.26 0.02"></a-text>
   </a-entity>
 
   <!-- ===================== CAMERA RIG ===================== -->
