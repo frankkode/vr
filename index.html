@@ -327,12 +327,12 @@ a-scene { position:fixed;left:350px;top:0;right:0;bottom:0; }
   button.ui { padding:5px 6px;font-size:9px;border-radius:7px; }
   button.ui.nav { padding:5px 10px;font-size:10px; }
   .row { gap:3px; }
-  #circmap { display:none; }
 }
 /* ---- 2D circulation map overlay (original artwork) ---- */
-#circmap{position:fixed;right:14px;bottom:14px;z-index:11;width:236px;
+#circmap{position:fixed;right:14px;bottom:14px;z-index:11;width:236px;display:none;
   background:rgba(8,12,24,.84);border:1px solid rgba(120,150,210,.25);border-radius:12px;
   padding:8px 10px 6px;backdrop-filter:blur(4px)}
+#circmap.visible { display:block; }
 #circmap h4{margin:0 0 2px;font-size:11px;font-weight:700;color:#cdd8f0;letter-spacing:.4px;cursor:grab;user-select:none}
 #circmap svg{width:100%;height:auto;display:block}
 #circmap .legend{display:flex;gap:12px;margin-top:2px;font-size:9.5px;color:#9fb0d6}
@@ -449,6 +449,7 @@ a-scene { position:fixed;left:350px;top:0;right:0;bottom:0; }
     <button class="ui" id="slowBtn">Slow-motion</button>
     <button class="ui" id="muteBtn">Narration on</button>
     <button class="ui" id="xrayBtn">Transparency</button>
+    <button class="ui" id="mapBtn">Map</button>
     <button class="ui quiz" id="quizBtn">Quiz</button>
     <button class="ui zoom-btn" id="zoomOutBtn" title="Zoom out">&minus;</button>
     <button class="ui zoom-btn" id="zoomInBtn" title="Zoom in">+</button>
@@ -683,7 +684,7 @@ a-scene { position:fixed;left:350px;top:0;right:0;bottom:0; }
   </a-entity>
 
   <!-- ===================== IN-SCENE QUIZ ===================== -->
-  <a-entity id="quiz" visible="false" position="0 1.7 1.4" look-at="[camera]">
+  <a-entity id="quiz" visible="false" position="0 1.7 -0.8" look-at="[camera]">
     <a-plane width="3.0" height="2.2" color="#0d1428" opacity="0.92" material="side: double; transparent: true; depthTest: false; shader: flat"></a-plane>
     <a-text id="quizQ" value="" align="center" width="2.8" wrap-count="38" color="#fff" position="0 0.7 0.02"></a-text>
     <a-plane class="clickable quizAns" id="qa0" width="2.7" height="0.40" color="#1f3460" position="0 0.18 0.02" material="side: double; transparent: false">
@@ -886,6 +887,7 @@ AFRAME.registerComponent('tour', {
     safeOn(document.querySelector('#xrayBtn'), 'click', function (e) { self.toggleXray(e.target); });
     safeOn(document.querySelector('#pauseBtn'), 'click', function (e) { self.togglePause(e.target); });
     safeOn(document.querySelector('#quizBtn'), 'click', function () { self.startQuiz(); });
+    safeOn(document.querySelector('#mapBtn'), 'click', function (e) { var cm = document.querySelector('#circmap'); cm.classList.toggle('visible'); e.target.classList.toggle('active', cm.classList.contains('visible')); });
     safeOn(document.querySelector('#zoomInBtn'), 'click', function () { if (window.zoomIn) window.zoomIn(); });
     safeOn(document.querySelector('#zoomOutBtn'), 'click', function () { if (window.zoomOut) window.zoomOut(); });
 
