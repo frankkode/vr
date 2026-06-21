@@ -891,7 +891,7 @@ AFRAME.registerComponent('tour', {
 
     // Quiz answer buttons
     ['#qa0', '#qa1', '#qa2'].forEach(function (sel, idx) {
-      document.querySelector(sel).addEventListener('click', function () { self.answer(idx); });
+      document.querySelector(sel).addEventListener('click', function (e) { if (e) e.stopPropagation(); self.answer(idx); });
     });
 
     // Sidebar navigation
@@ -1258,6 +1258,7 @@ AFRAME.registerComponent('tour', {
     document.querySelector('#hotLabel').setAttribute('visible', 'false');
     document.querySelector('#vrNext').setAttribute('visible', 'false');
     document.querySelector('#billboard').setAttribute('visible', 'false');
+    document.querySelector('#markers').setAttribute('visible', 'false');
     document.querySelector('#quiz').setAttribute('visible', 'true');
     ['#qa0', '#qa1', '#qa2'].forEach(function (s) { document.querySelector(s).setAttribute('visible', 'true'); });
     this.renderQ();
@@ -1309,6 +1310,7 @@ AFRAME.registerComponent('tour', {
     document.querySelector('#qa2').setAttribute('visible', 'true');
     document.querySelector('#billboard').setAttribute('visible', 'true');
     document.querySelector('#vrNext').setAttribute('visible', 'true');
+    document.querySelector('#markers').setAttribute('visible', 'true');
   },
 
   toggleMute: function (btn) {
@@ -1633,6 +1635,59 @@ AFRAME.registerComponent('valve', {
   window.addEventListener('touchmove', onMove, { passive: false });
   window.addEventListener('mouseup', onEnd);
   window.addEventListener('touchend', onEnd);
+})();
+
+// ============================================================
+// PINCH-TO-ZOOM & SCROLL-TO-ZOOM
+// ============================================================
+(function () {
+  var camEl = document.querySelector('[camera]') || document.querySelector('a-camera');
+  if (!camEl) return;
+  var zoom = 0;       // current zoom offset (0 = default)
+  var minZoom = -2.0; // closer (heart bigger)
+  var maxZoom = 2.5;  // farther (heart smaller)
+  var defaultCamZ = 0;
+
+  function applyZoom() {
+    var z = defaultCamZ + zoom;
+    camEl.setAttribute('position', '0 1.6 ' + z.toFixed(2));
+  }
+
+  // Scroll wheel (desktop)
+  document.addEventListener('wheel', function (e) {
+    if (e.ctrlKey || e.metaKey) return; // don't intercept browser zoom
+    e.preventDefault();
+    zoom -= e.deltaY * 0.005;
+    zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
+    applyZoom();
+  }, { passive: false });
+
+  // Pinch-to-zoom (mobile)
+  var pinchDist0 = 0;
+  var zoom0 = 0;
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2) {
+      pinchDist0 = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      zoom0 = zoom;
+    }
+  }, { passive: false });
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 2 && pinchDist0 > 0) {
+      var d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      zoom = zoom0 + (d - pinchDist0) * 0.006;
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
+      applyZoom();
+    }
+  }, { passive: false });
+  document.addEventListener('touchend', function () {
+    pinchDist0 = 0;
+  });
 })();
 </script>
 </body>
