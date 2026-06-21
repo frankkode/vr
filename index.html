@@ -7,19 +7,31 @@
 
 <!-- Error reporter + WebGL check + CDN load detection -->
 <script>
-var _errs = [];
+var _errs = []; var _errCounts = {};
 function showError(msg) {
+  // Deduplicate: count repeats of identical messages
+  if (_errCounts[msg]) { _errCounts[msg]++; updateErrBox(); return; }
+  _errCounts[msg] = 1;
   _errs.push(msg);
+  updateErrBox();
+}
+function updateErrBox() {
   var box = document.getElementById('errbox') || (function () {
     var d = document.createElement('div'); d.id = 'errbox';
     d.style.cssText = 'position:fixed;z-index:99999;left:8px;right:8px;bottom:8px;background:#1a0a0f;color:#ffb8c6;padding:10px 12px;border:1px solid #c0395c;border-radius:12px;font:11px/1.4 monospace;white-space:pre-wrap;max-height:50vh;overflow-y:auto;pointer-events:none';
     document.body && document.body.appendChild(d); return d;
   })();
-  if (box) box.textContent = _errs.join('\n');
+  if (box) {
+    var lines = _errs.map(function (m) {
+      var c = _errCounts[m] || 1;
+      return c > 1 ? m + ' (x' + c + ')' : m;
+    });
+    box.textContent = lines.join('\n');
+  }
 }
 window.addEventListener('error', function (e) {
   var msg = e.message || 'unknown';
-  if (msg === 'Script error.' && !e.filename) msg += ' (cross-origin — check CDN CORS or browser extensions)';
+  if (msg === 'Script error.' && !e.filename) msg += ' (cross-origin)';
   if (e.filename) msg += '\n  at ' + (e.filename + '').replace(/^https?:\/\/[^/]+/, '') + ':' + e.lineno + ':' + e.colno;
   showError(msg);
 });
