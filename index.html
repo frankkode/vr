@@ -19,6 +19,7 @@ function showError(msg) {
 }
 window.addEventListener('error', function (e) {
   var msg = e.message || 'unknown';
+  if (msg === 'Script error.' && !e.filename) msg += ' (cross-origin — check CDN CORS or browser extensions)';
   if (e.filename) msg += '\n  at ' + (e.filename + '').replace(/^https?:\/\/[^/]+/, '') + ':' + e.lineno + ':' + e.colno;
   showError(msg);
 });
@@ -860,7 +861,7 @@ AFRAME.registerComponent('tour', {
     function safeOn(el, ev, fn) { if (el) el.addEventListener(ev, fn); }
     safeOn(document.querySelector('#nextBtn'), 'click', function () { self.go(self.index + 1); });
     safeOn(document.querySelector('#prevBtn'), 'click', function () { self.go(self.index - 1); });
-    safeOn(document.querySelector('#vrNext'), 'click', function () { self.go(self.index + 1); });
+    safeOn(document.querySelector('#vrNext'), 'click', function () { var nb = document.querySelector('#nextBtn'); if (nb) nb.click(); });
     safeOn(document.querySelector('#slowBtn'), 'click', function (e) { self.toggleSlow(e.target); });
     safeOn(document.querySelector('#muteBtn'), 'click', function (e) { self.toggleMute(e.target); });
     safeOn(document.querySelector('#xrayBtn'), 'click', function (e) { self.toggleXray(e.target); });
@@ -1080,7 +1081,7 @@ AFRAME.registerComponent('tour', {
       ring.setAttribute('color', (i === 1 || i === 2) ? '#5588ff' : '#ff5555');
       ring.setAttribute('opacity', '0.5');
       ring.setAttribute('class', 'clickable');
-      ring.addEventListener('click', function () { self.go(i); });
+      ring.addEventListener('click', function () { try { self.go(i); } catch (e) { showError('Tour nav error: ' + (e && e.message ? e.message : String(e))); } });
       wrap.appendChild(ring);
       var label = document.createElement('a-text');
       label.setAttribute('value', String(i));
@@ -1340,6 +1341,7 @@ AFRAME.registerComponent('tour', {
 
   // ---- NAVIGATION ----
   go: function (i, silent) {
+    try {
     if (this.isTransitioning) return;
     if (i < 0) i = this.stations.length - 1;
     if (i >= this.stations.length) i = 0;
@@ -1406,6 +1408,7 @@ AFRAME.registerComponent('tour', {
     document.querySelector('#vrText').setAttribute('value', s.text);
 
     if (!silent) this.speak(s.text);
+    } catch (e) { showError('Tour go(' + i + '): ' + (e && e.message ? e.message : String(e))); }
   }
 });
 
