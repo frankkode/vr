@@ -31,7 +31,9 @@ function updateErrBox() {
 }
 window.addEventListener('error', function (e) {
   var msg = e.message || 'unknown';
-  if (msg === 'Script error.' && !e.filename) msg += ' (cross-origin)';
+  // Cross-origin errors with no filename are non-actionable (from CDN workers, browser extensions, WebViews).
+  // Log to console for debugging but don't show on screen — they can't be fixed.
+  if (msg === 'Script error.' && !e.filename) { console.warn('Suppressed cross-origin Script error (not from app code)'); return; }
   if (e.filename) msg += '\n  at ' + (e.filename + '').replace(/^https?:\/\/[^/]+/, '') + ':' + e.lineno + ':' + e.colno;
   showError(msg);
 });
